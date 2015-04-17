@@ -33,6 +33,10 @@ if [ "$OVPN_DEFROUTE" != "0" ] || [ "$OVPN_NAT" == "1" ] ; then
     done
 fi
 
-conf="$OPENVPN/openvpn.conf"
+conf=${OPENVPN_CONF:="$OPENVPN/openvpn.conf"}
+
+if [ ! -z "${1}" ]; then
+    conf="${1}"
+fi
 
 exec openvpn --config "$conf"
