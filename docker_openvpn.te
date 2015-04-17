@@ -1,0 +1,35 @@
+policy_module(docker_openvpn,1.0)
+
+virt_sandbox_domain_template(docker_openvpn)
+
+# sesearch -AC -s openvpn_t -c capability
+allow docker_openvpn_t self : capability { dac_override dac_read_search setgid setuid net_bind_service net_admin ipc_lock sys_chroot sys_nice sys_tty_config audit_write } ;
+
+gen_require(`
+  type node_t;
+  type openvpn_port_t;
+  type proc_net_t;
+  type kernel_t;
+')
+
+allow docker_openvpn_t node_t:udp_socket node_bind;
+allow docker_openvpn_t openvpn_port_t:udp_socket name_bind;
+allow docker_openvpn_t proc_net_t:file { read open };
+allow docker_openvpn_t self:capability net_raw;
+allow docker_openvpn_t self:netlink_route_socket { bind create setopt nlmsg_write getattr };
+allow docker_openvpn_t self:rawip_socket { getopt create setopt };
+allow docker_openvpn_t self:tun_socket create;
+allow docker_openvpn_t self:udp_socket { getopt create ioctl setopt bind read write };
+
+allow docker_openvpn_t kernel_t:system module_request;
+allow docker_openvpn_t self:netlink_route_socket { nlmsg_read write read };
+
+
+#allow docker_openvpn_t self:udp_socket create_socket_perms;
+#corenet_udp_bind_all_nodes(docker_openvpn_t)
+
+
+#Set to permissive to debug
+#permissive docker_openvpn_t;
+# Compile: make -f /usr/share/selinux/devel/Makefile docker_openvpn.pp
+# Install: semodule -i docker_openvpn.pp
